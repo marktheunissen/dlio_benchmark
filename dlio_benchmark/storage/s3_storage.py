@@ -20,11 +20,27 @@ from dlio_benchmark.common.constants import MODULE_STORAGE
 from dlio_benchmark.storage.storage_handler import DataStorage, Namespace
 from dlio_benchmark.common.enumerations import NamespaceType, MetadataType
 import os
+import logging
+import boto3
+import re
 
 from dlio_benchmark.utils.utility import Profile
 
 dlp = Profile(MODULE_STORAGE)
 
+s3 = boto3.resource("s3",
+    aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
+    endpoint_url=os.environ.get("S3_ENDPOINT"),
+    region_name=os.environ.get("AWS_REGION")
+)
+
+s3_client = boto3.client("s3",
+    aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
+    endpoint_url=os.environ.get("S3_ENDPOINT"),
+    region_name=os.environ.get("AWS_REGION")
+)
 
 class S3Storage(DataStorage):
     """
@@ -46,31 +62,56 @@ class S3Storage(DataStorage):
 
     @dlp.log
     def get_namespace(self):
-        return self.get_node(self.namespace.name)
+        return self.namespace.name
 
     @dlp.log
     def create_node(self, id, exist_ok=False):
-        return super().create_node(self.get_uri(id), exist_ok)
+        return True
 
     @dlp.log
     def get_node(self, id=""):
-        return super().get_node(self.get_uri(id))
+        try:
+            response = s3_client.head_object(Bucket=self.namespace.name, Key=id)
+            return MetadataType.FILE
+
+        except:
+            response = s3_client.list_objects_v2(Bucket=self.namespace.name, Prefix=id, Delimiter='/')
+
+            if "Contents" in response or "CommonPrefixes" in response:
+                return MetadataType.DIRECTORY
+            else:
+                return None
 
     @dlp.log
     def walk_node(self, id, use_pattern=False):
-        return super().walk_node(self.get_uri(id), use_pattern)
+        results=[]
+        if use_pattern:
+            bucket = s3.Bucket(self.namespace.name)
+            pat = re.compile(id)
+            for object in bucket.objects.all():
+                m = re.search(pat, object.key)
+                if m is not None:
+                    results.append(self.get_basename(object.key))
+        else:
+            bucket = s3.Bucket(self.namespace.name)
+            for object in bucket.objects.filter(Prefix=id):
+                results.append(self.get_basename(object.key))
+        return results
 
     @dlp.log
     def delete_node(self, id):
-        return super().delete_node(self.get_uri(id))
+        bucket = s3.Bucket(self.namespace.name)
+        bucket.objects.filter(Prefix=id).delete()
+        return True
 
     @dlp.log
     def put_data(self, id, data, offset=None, length=None):
-        return super().put_data(self.get_uri(id), data, offset, length)
+        s3_client.put_object(Body=data, Bucket=self.namespace.name, Key=id)
 
     @dlp.log
     def get_data(self, id, data, offset=None, length=None):
-        return super().get_data(self.get_uri(id), data, offset, length)
+        obj=s3_client.get_object(Bucket=self.namespace.name, Key=id)
+        return obj["Body"].read()
 
     def get_basename(self, id):
         return os.path.basename(id)

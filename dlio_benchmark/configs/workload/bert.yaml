@@ -1,0 +1,38 @@
+model: bert
+
+framework: tensorflow
+
+# storage:
+#   storage_type: s3
+#   storage_root: bertbucket
+
+workflow:
+  generate_data: False
+  train: True
+  checkpoint: True
+
+dataset:
+  data_folder: data/bert
+  format: tfrecord
+  num_files_train: 100
+  num_samples_per_file: 313532
+  record_length: 2500
+  file_prefix: part
+
+reader:
+  data_loader: tensorflow
+  read_threads: 1
+  computation_threads: 1
+  transfer_size: 262144
+  batch_size: 48
+  file_shuffle: seed
+  sample_shuffle: seed
+
+train:
+  computation_time: 0.968
+  total_training_steps: 5000
+
+checkpoint:
+  checkpoint_folder: checkpoints/bert
+  steps_between_checkpoints: 1250
+  model_size: 4034713312
