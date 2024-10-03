@@ -36,13 +36,14 @@ class S3NPZReader(FormatReader):
         super().__init__(dataset_type, thread_index)
 
     @dlp.log
-    def open(self, filename): # filename will be an index in our hack
-        super().open(filename) # super class does nothing on .open, this is copied from the npz_reader.py
-        # logging.info(f"S3NPZReader: Opening file with index: {filename}")
+    def open(self, file_index): # filename will be an index in our hack
+        super().open(file_index) # super class does nothing on .open, this is copied from the npz_reader.py
+        logging.info(f"S3NPZReader: Opening file with index: {file_index}")
 
         # Read object from S3 via S3MapDataset, run through np.load.
-        obj = self._dataset.s3_read_object(filename)
-        return np.load(io.BytesIO(obj), allow_pickle=True)['x']
+        # This is weird because of the incompatiblity of architecture between DLIO and s3torchconnector
+        obj = self._dataset.s3_get_object_reader(file_index)
+        return np.load(obj, allow_pickle=True)['x']
 
     @dlp.log
     def close(self, filename):

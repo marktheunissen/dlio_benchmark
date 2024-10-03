@@ -89,7 +89,7 @@ class S3TorchDataset(S3MapDataset):
 
     # In DLIO, the Reader is supposed to control reading the data, however S3MapDataset is the class that actually
     # has this capability for S3, so there's a bit of a weird call chain here, due to the design of DLIO vs. s3torchconnector
-    def s3_read_object(self, image_idx):
+    def s3_get_object_reader(self, image_idx):
         return super().__getitem__(image_idx)
 
 
@@ -105,12 +105,11 @@ class S3TorchDataLoader(BaseDataLoader):
     @dlp.log
     def read(self):
         s3config = S3ClientConfig(force_path_style=True)
-        DATASET_URI = f"s3://{self._args.storage_root}"
+        DATASET_URI = f"s3://{self._args.storage_root}/{self._args.data_folder}/{self.dataset_type.value}"
         dataset = S3TorchDataset.from_prefix(DATASET_URI,
                 region=AWS_REGION,
                 endpoint=S3_ENDPOINT,
-                s3client_config=s3config,
-                transform=lambda obj: obj.read())
+                s3client_config=s3config)
         dataset.init(self.format_type, self.dataset_type, self.epoch_number, self.num_samples,
                      self._args.read_threads, self.batch_size)
 

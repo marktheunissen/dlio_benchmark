@@ -70,6 +70,7 @@ class S3Storage(DataStorage):
 
     @dlp.log
     def get_node(self, id=""):
+        logging.info("S3_STORAGE: get_node: %s", id)
         try:
             response = s3_client.head_object(Bucket=self.namespace.name, Key=id)
             return MetadataType.FILE
@@ -84,6 +85,7 @@ class S3Storage(DataStorage):
 
     @dlp.log
     def walk_node(self, id, use_pattern=False):
+        logging.info("S3_STORAGE: walk_node: %s", id)
         results=[]
         if use_pattern:
             bucket = s3.Bucket(self.namespace.name)
@@ -100,18 +102,22 @@ class S3Storage(DataStorage):
 
     @dlp.log
     def delete_node(self, id):
+        logging.info("S3_STORAGE: delete_node: %s", id)
         bucket = s3.Bucket(self.namespace.name)
         bucket.objects.filter(Prefix=id).delete()
         return True
 
     @dlp.log
     def put_data(self, id, data, offset=None, length=None):
+        logging.info("S3_STORAGE: put_data: %s", id)
         s3_client.put_object(Body=data, Bucket=self.namespace.name, Key=id)
 
     @dlp.log
     def get_data(self, id, data, offset=None, length=None):
+        logging.info("S3_STORAGE: get_data: %s", id)
         obj=s3_client.get_object(Bucket=self.namespace.name, Key=id)
         return obj["Body"].read()
 
     def get_basename(self, id):
+        logging.info("S3_STORAGE: get_basename: %s", id)
         return os.path.basename(id)
