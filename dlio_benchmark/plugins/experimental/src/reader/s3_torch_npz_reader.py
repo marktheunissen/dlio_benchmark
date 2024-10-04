@@ -51,12 +51,16 @@ class S3NPZReader(FormatReader):
 
     @dlp.log
     def get_sample(self, filename, sample_index):
-        super().get_sample(filename, sample_index)
+        # logging.info(f"S3NPZReader: Getting sample {sample_index} from file {filename}")
+        super().get_sample(filename, sample_index) # super does nothing, this was copied
         image = self.open_file_map[filename][..., sample_index]
         dlp.update(image_size=image.nbytes)
 
+    @dlp.log
     def next(self):
+        # logging.info("S3NPZReader: Getting next batch")
         for batch in super().next():
+            # logging.info(f"S3NPZReader: Yielding batch of size {len(batch)}")
             yield batch
 
     @dlp.log

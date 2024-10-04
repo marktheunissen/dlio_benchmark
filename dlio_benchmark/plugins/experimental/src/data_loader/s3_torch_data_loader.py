@@ -96,6 +96,8 @@ class S3TorchDataset(S3MapDataset):
 # Set these env vars in `env-container`` file (when using Docker), or however needed for your env.
 AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
 S3_ENDPOINT = os.environ.get("S3_ENDPOINT")
+S3_PART_SIZE_MB = int(os.environ.get("S3_PART_SIZE_MB", 16)) # default = 8
+S3_THROUGHPUT_TARGET_GBPS = float(os.environ.get("S3_THROUGHPUT_TARGET_GBPS", 1000)) # default = 10
 
 class S3TorchDataLoader(BaseDataLoader):
     @dlp.log_init
@@ -104,7 +106,7 @@ class S3TorchDataLoader(BaseDataLoader):
 
     @dlp.log
     def read(self):
-        s3config = S3ClientConfig(force_path_style=True)
+        s3config = S3ClientConfig(force_path_style=True, part_size=S3_PART_SIZE_MB * 1024 * 1024, throughput_target_gbps=S3_THROUGHPUT_TARGET_GBPS)
         DATASET_URI = f"s3://{self._args.storage_root}/{self._args.data_folder}/{self.dataset_type.value}"
         dataset = S3TorchDataset.from_prefix(DATASET_URI,
                 region=AWS_REGION,
