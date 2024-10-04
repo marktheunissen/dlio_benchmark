@@ -32,16 +32,14 @@ s3 = boto3.resource("s3",
     aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
     aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
     endpoint_url=os.environ.get("S3_ENDPOINT"),
-    region_name=os.environ.get("AWS_REGION"),
-    verify=False
+    region_name=os.environ.get("AWS_REGION")
 )
 
 s3_client = boto3.client("s3",
     aws_access_key_id=os.environ.get("AWS_ACCESS_KEY_ID"),
     aws_secret_access_key=os.environ.get("AWS_SECRET_ACCESS_KEY"),
     endpoint_url=os.environ.get("S3_ENDPOINT"),
-    region_name=os.environ.get("AWS_REGION"),
-    verify=False
+    region_name=os.environ.get("AWS_REGION")
 )
 
 class S3Storage(DataStorage):
