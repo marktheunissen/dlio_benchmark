@@ -38,7 +38,7 @@ class S3NPZReader(FormatReader):
     @dlp.log
     def open(self, file_index): # filename will be an index in our hack
         super().open(file_index) # super class does nothing on .open, this is copied from the npz_reader.py
-        logging.info(f"S3NPZReader: Opening file with index: {file_index}")
+        # logging.info(f"S3NPZReader: Opening file with index: {file_index}")
 
         # Read object from S3 via S3MapDataset, run through np.load.
         # This is weird because of the incompatiblity of architecture between DLIO and s3torchconnector
@@ -58,13 +58,13 @@ class S3NPZReader(FormatReader):
 
     @dlp.log
     def next(self):
-        # logging.info("S3NPZReader: Getting next batch")
+        # next is only called in iterator mode, we run in index mode
         for batch in super().next():
-            # logging.info(f"S3NPZReader: Yielding batch of size {len(batch)}")
             yield batch
 
     @dlp.log
     def read_index(self, image_idx, step):
+        # called in index mode
         dlp.update(step=step)
         return super().read_index(image_idx, step)
 
