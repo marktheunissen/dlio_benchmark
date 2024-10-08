@@ -12,19 +12,23 @@ core_deps = [
     "PyYAML>=6.0.0",
     "h5py>=3.11.0",
     "mpi4py>=3.1.4",
-    "numpy>=1.23.5",
+    "numpy==1.26.4",
     "omegaconf>=2.2.0",
     "pandas>=1.5.1",
     "psutil>=5.9.8",
     "pydftracer==1.0.2",
+    "boto3==1.35.17",
 ]
 x86_deps = [
     f"hydra-core>={HYDRA_VERSION}",
-    "nvidia-dali-cuda110>=1.34.0",
-    "tensorflow>=2.11.0",
-    "torch>=2.2.0",
-    "torchaudio",
-    "torchvision",
+    # removed, throwing errors, not required.
+    # "nvidia-dali-cuda110==1.34.0",
+    "tensorflow==2.16.2",
+    "tensorflow-io==0.37.1",
+    # removed, throwing errors, not required.
+    # "torch>=2.2.0",
+    # "torchaudio",
+    # "torchvision",
 ]
 ppc_deps = [
     f"hydra-core @ git+https://github.com/facebookresearch/hydra.git@v{HYDRA_VERSION}#egg=hydra-core"

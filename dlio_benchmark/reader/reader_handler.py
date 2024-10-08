@@ -49,7 +49,7 @@ class FormatReader(ABC):
             FormatReader.read_images = 0
         self.step = 1
         self.image_idx = 0
-        self._file_list = self._args.file_list_train if self.dataset_type is DatasetType.TRAIN else self._args.file_list_eval 
+        self._file_list = self._args.file_list_train if self.dataset_type is DatasetType.TRAIN else self._args.file_list_eval
         self.batch_size = self._args.batch_size if self.dataset_type is DatasetType.TRAIN else self._args.batch_size_eval
         if dataset_type is DatasetType.TRAIN:
             self.global_index_map = self._args.train_global_index_map
@@ -66,7 +66,7 @@ class FormatReader(ABC):
         return a
     @abstractmethod
     def open(self, filename):
-        return 
+        return
 
     @abstractmethod
     def close(self, filename):
@@ -85,10 +85,10 @@ class FormatReader(ABC):
         total_images = len(self.file_map[self.thread_index])
         logging.debug(f"{utcnow()} Reading {total_images} images thread {self.thread_index} rank {self._args.my_rank}")
 
-        for global_sample_idx, filename, sample_index in self.file_map[self.thread_index]:
+        for global_sample_idx, filename, file_index, sample_index in self.file_map[self.thread_index]:
             self.image_idx = global_sample_idx
             if filename not in self.open_file_map or self.open_file_map[filename] is None:
-                self.open_file_map[filename] = self.open(filename)
+                self.open_file_map[filename] = self.open(file_index)
             self.get_sample(filename, sample_index)
             self.preprocess()
             batch.append(self._args.resized_image)
@@ -116,8 +116,9 @@ class FormatReader(ABC):
         filename, sample_index = self.global_index_map[global_sample_idx]
         logging.debug(f"{utcnow()} read_index {filename}, {sample_index}")
         FormatReader.read_images += 1
+        # ON_DEMAND is hard coded so this will be true
         if self._args.read_type is ReadType.ON_DEMAND or filename not in self.open_file_map or self.open_file_map[filename] is None:
-            self.open_file_map[filename] = self.open(filename)
+            self.open_file_map[filename] = self.open(global_sample_idx)
         self.get_sample(filename, sample_index)
         self.preprocess()
         if self._args.read_type is ReadType.ON_DEMAND:

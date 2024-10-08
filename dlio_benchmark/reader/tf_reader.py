@@ -24,6 +24,7 @@ from dlio_benchmark.utils.utility import Profile
 from dlio_benchmark.common.enumerations import DatasetType, Shuffle
 from dlio_benchmark.reader.reader_handler import FormatReader
 import tensorflow as tf
+import tensorflow_io as tfio # Needed for s3 support, importing it is enough
 
 dlp = Profile(MODULE_DATA_READER)
 
